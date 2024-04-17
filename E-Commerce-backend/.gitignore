@@ -1,9 +1,6 @@
 # Ignore all files and subdirectories inside .imageDirectory
 .imageDirectory/*
 
-# But keep the directory itself
-!.imageDirectory/
-
 # Ignore development environment specific files and folders
 HELP.md
 target/
