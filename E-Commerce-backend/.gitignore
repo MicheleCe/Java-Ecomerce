@@ -1,5 +1,5 @@
 # Ignore all files and subdirectories inside .imageDirectory
-.imageDirectory/*
+imageDirectory/*
 
 # Ignore development environment specific files and folders
 HELP.md
