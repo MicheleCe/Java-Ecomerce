@@ -1,14 +1,15 @@
-HELP.md
-target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
 # Ignore all files and subdirectories inside .imageDirectory
 .imageDirectory/*
 
 # But keep the directory itself
 !.imageDirectory/
 
+# Ignore development environment specific files and folders
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
 ### STS ###
 .apt_generated
 .classpath
