@@ -10,9 +10,13 @@ import java.util.UUID;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -25,6 +29,8 @@ import jakarta.persistence.Table;
 /**
  * A product available for purchasing.
  */
+
+
 @Entity
 @Table(name = "product")
 public class Product {
@@ -33,32 +39,35 @@ public class Product {
 	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "id", nullable = false)
 	private UUID id;
-	/** The name of the product. */
+
 	@Column(name = "name", nullable = false, unique = true)
 	private String name;
-	/** The short description of the product. */
+
 	@Column(name = "short_description")
 	private String shortDescription;
-	/** The long description of the product. */
+
 	@Column(name = "long_description")
 	private String longDescription;
-	/** The price of the product. */
-	@Column(name = "price", nullable = false)
-	private Double price;
-	@CreatedDate
+
+
 	@Column(name = "created_at", updatable = false)
-	private LocalDateTime createdAt;
+	private String createdAt;
+	
 	@Column(name = "last_update")
-	@LastModifiedDate
-	private LocalDateTime lastUpdate;
+	private String lastUpdate;
+	
+	@Column(name = "user_id", nullable = false)
+	private UUID userId;
+	
+	@Column(name = "status", nullable = false)
+	@Enumerated(EnumType.STRING)
+	private ProductStatus status;
+	
 	@ManyToMany
 	@JoinTable(name = "product_category", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
 	private Set<Category> categories = new HashSet<>();
-	
-	@Column(name = "isAvaible")
-	private Boolean isAvaible;
 
-	@OneToMany(mappedBy = "product", cascade = CascadeType.REMOVE, orphanRemoval = true)
+	@OneToMany(mappedBy = "product", cascade = {CascadeType.PERSIST, CascadeType.REMOVE}, orphanRemoval = true)
 	private List<Inventory> inventory = new ArrayList<>();
 
 	public UUID getId() {
@@ -93,27 +102,28 @@ public class Product {
 		this.longDescription = longDescription;
 	}
 
-	public Double getPrice() {
-		return price;
+
+	public ProductStatus getStatus() {
+		return status;
 	}
 
-	public void setPrice(Double price) {
-		this.price = price;
+	public void setStatus(ProductStatus status) {
+		this.status = status;
 	}
 
-	public LocalDateTime getCreatedAt() {
+	public String getCreatedAt() {
 		return createdAt;
 	}
 
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
+	public void setCreatedAt(String formattedDateTime) {
+		this.createdAt = formattedDateTime;
 	}
 
-	public LocalDateTime getLastUpdate() {
+	public String getLastUpdate() {
 		return lastUpdate;
 	}
 
-	public void setLastUpdate(LocalDateTime lastUpdate) {
+	public void setLastUpdate(String lastUpdate) {
 		this.lastUpdate = lastUpdate;
 	}
 
@@ -125,13 +135,6 @@ public class Product {
 		this.categories = categories;
 	}
 
-	public Boolean getIsAvaible() {
-		return isAvaible;
-	}
-
-	public void setIsAvaible(Boolean isAvaible) {
-		this.isAvaible = isAvaible;
-	}
 
 	public List<Inventory> getInventory() {
 		return inventory;
@@ -139,6 +142,21 @@ public class Product {
 
 	public void setInventory(List<Inventory> inventory) {
 		this.inventory = inventory;
+	}
+
+	public UUID getUserId() {
+		return userId;
+	}
+
+	public void setUserId(UUID userId) {
+		this.userId = userId;
+	}
+
+	@Override
+	public String toString() {
+		return "Product [id=" + id + ", name=" + name + ", shortDescription=" + shortDescription + ", longDescription="
+				+ longDescription + ", createdAt=" + createdAt + ", lastUpdate=" + lastUpdate + ", userId=" + userId
+				+ ", status=" + status + ", categories=" + categories + ", inventory=" + inventory + "]";
 	}
 
 	

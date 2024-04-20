@@ -1,5 +1,7 @@
 package com.service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -60,12 +62,33 @@ public class ProductService {
      */
     @Transactional
     public Product addProduct(Product product) {
+
         Product newProduct = new Product();
         newProduct.setName(product.getName());
         newProduct.setShortDescription(product.getShortDescription());
         newProduct.setLongDescription(product.getLongDescription()); 
-        newProduct.setPrice(product.getPrice());
+        newProduct.setStatus(product.getStatus());
+        newProduct.setUserId(product.getUserId());
+        if (product.getCreatedAt() == null) {
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a");
+            String formattedDateTime = now.format(formatter);
+            newProduct.setCreatedAt(formattedDateTime);
+        }
+        
         newProduct = productDAO.save(newProduct);
+
+        for (Category category : product.getCategories()) {
+            Optional<Category> existingCategoryOptional = categoryDAO.findById(category.getId());
+            if (existingCategoryOptional.isPresent()) {
+                Category existingCategory = existingCategoryOptional.get();
+                existingCategory.getProducts().add(newProduct);
+                newProduct.getCategories().add(existingCategory);
+            } else {
+                System.out.println("Category not found: " + category.getId());
+            }
+        }
+
         List<Inventory> newInventories = new ArrayList<>();
         for (Inventory inventory : product.getInventory()) {
             Inventory newInventory = new Inventory();
@@ -73,13 +96,19 @@ public class ProductService {
             newInventory.setQuantity(inventory.getQuantity());
             newInventory.setColor(inventory.getColor());
             newInventory.setModel(inventory.getModel());
+            newInventory.setPrice(inventory.getPrice());
             newInventories.add(newInventory);
         }
+
+
+        newInventories = inventoryDAO.saveAll(newInventories);
+
+
         newProduct.setInventory(newInventories);
-        inventoryDAO.saveAll(newInventories);
 
         return productDAO.save(newProduct);
     }
+
 
 
     /**
@@ -96,34 +125,45 @@ public class ProductService {
             Product existingProduct = existingProductOptional.get();
             existingProduct.setName(updatedProduct.getName());
             existingProduct.setShortDescription(updatedProduct.getShortDescription());
-            existingProduct.setLongDescription(updatedProduct.getShortDescription());
-            existingProduct.setPrice(updatedProduct.getPrice());
+            existingProduct.setLongDescription(updatedProduct.getLongDescription());
+
+            existingProduct.setCategories(updatedProduct.getCategories());
+            
+            if (updatedProduct.getLastUpdate() == null) {
+                LocalDateTime now = LocalDateTime.now();
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a");
+                String formattedDateTime = now.format(formatter);
+                existingProduct.setLastUpdate(formattedDateTime);
+            }
+
             if (updatedProduct.getInventory() != null) {
                 List<Inventory> existingInventories = existingProduct.getInventory();
                 for (Inventory updatedInventory : updatedProduct.getInventory()) {
                     boolean found = false;
                     for (Inventory existingInventory : existingInventories) {
-
                         if (existingInventory.getId().equals(updatedInventory.getId())) {
-                        	if (updatedInventory.getQuantity() ==0) {
-                        		inventoryDAO.delete(updatedInventory);
-                        		break;
-                        	}
-                            existingInventory.setQuantity(updatedInventory.getQuantity());
-                            existingInventory.setColor(updatedInventory.getColor());
-                            existingInventory.setModel(updatedInventory.getModel());
+                            if (updatedInventory.getQuantity() == 0) {
+                                existingInventories.remove(existingInventory);
+                                inventoryDAO.delete(existingInventory);
+                            } else {
+                                existingInventory.setQuantity(updatedInventory.getQuantity());
+                                existingInventory.setColor(updatedInventory.getColor());
+                                existingInventory.setModel(updatedInventory.getModel());
+                                existingInventory.setPrice(updatedInventory.getPrice());
+                            }
                             found = true;
                             break;
                         }
                     }
-                    if (!found & updatedInventory.getQuantity() != 0) {
+                    if (!found && updatedInventory.getQuantity() != 0) {
                         Inventory newInventory = new Inventory();
                         newInventory.setProduct(existingProduct);
                         newInventory.setQuantity(updatedInventory.getQuantity());
                         newInventory.setColor(updatedInventory.getColor());
                         newInventory.setModel(updatedInventory.getModel());
+                        newInventory.setPrice(updatedInventory.getPrice());
                         existingInventories.add(newInventory);
-                        inventoryDAO.save(newInventory);
+                        inventoryDAO.save(newInventory); 
                     }
                 }
             }
@@ -132,6 +172,7 @@ public class ProductService {
             return null;
         }
     }
+
     
     @Transactional
     public void addProductToCategory(UUID categoryId, Product product) {
@@ -139,12 +180,12 @@ public class ProductService {
         if (existingCategoryOptional == null) {
             throw new IllegalArgumentException("Category not found");
         }
+        
         Category categoryData = existingCategoryOptional.get();
-        // Add the product to the category
+
         categoryData.getProducts().add(product);
         product.getCategories().add(categoryData);
 
-        // Save the updated entities
         categoryDAO.save(categoryData);
         productDAO.save(product);
     }
@@ -156,5 +197,9 @@ public class ProductService {
     		Product existingProduct = existingProductOptional.get();
     		productDAO.delete(existingProduct);
     	}
+    }
+    
+    public List<Product> findProductsByUserId(UUID userId) {
+        return productDAO.findByUserId(userId);
     }
 }

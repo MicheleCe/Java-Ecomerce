@@ -10,4 +10,6 @@ import com.model.Category;
 
 public interface CategoryDAO extends ListCrudRepository<Category, UUID> {
 	
+	Category findByName(String name);
+	
 }

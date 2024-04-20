@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -22,6 +24,7 @@ public class Category {
 	@Column(name = "name", unique = true)
 	private String name;
 
+	@JsonIgnore
 	@ManyToMany(mappedBy = "categories")
 	private List<Product> products = new ArrayList<>();
 
@@ -48,5 +51,12 @@ public class Category {
 	public void setProducts(List<Product> products) {
 		this.products = products;
 	}
+
+	@Override
+	public String toString() {
+		return "Category [id=" + id + ", name=" + name + ", products=" + products + "]";
+	}
+	
+	
 
 }

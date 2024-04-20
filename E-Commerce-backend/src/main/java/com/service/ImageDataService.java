@@ -53,10 +53,10 @@ public class ImageDataService {
 
 		int[] dimensions = getImageDimensions(type);
 
-		Thumbnails.of(imageFile.getInputStream()).size(dimensions[0], dimensions[1]) // Set your desired size
+		Thumbnails.of(imageFile.getInputStream()).size(dimensions[0], dimensions[1]) 
 				.outputQuality(1).outputFormat("jpeg").toFile(filePath.toFile());
 		
-		return filePath.toString(); // Return the absolute path to the saved image
+		return filePath.toString(); 
 	}
 
 	private int[] getImageDimensions(String type) {

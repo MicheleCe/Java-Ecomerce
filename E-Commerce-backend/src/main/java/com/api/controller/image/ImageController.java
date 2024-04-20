@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -35,14 +36,14 @@ public class ImageController {
         this.imageDataService = imageDataService;
     }
 
-    @PostMapping("/{imageTpe}")
-    public ResponseEntity<String> uploadImage(@AuthenticationPrincipal LocalUser user, @PathVariable String imageTpe,
+    @PostMapping("/{holderId}/{imageTpe}")
+    public ResponseEntity<String> uploadImage(@AuthenticationPrincipal LocalUser user, @PathVariable UUID holderId, @PathVariable String imageTpe,
                                                      @RequestParam("file") MultipartFile file) {
         if (user == null) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         try {
-            String imageUrl = imageDataService.saveImageToStorage(imageTpe, user.getId(), file);
+            String imageUrl = imageDataService.saveImageToStorage(imageTpe, holderId, file);
             return ResponseEntity.ok(imageUrl);
         } catch (IOException e) {
             e.printStackTrace();

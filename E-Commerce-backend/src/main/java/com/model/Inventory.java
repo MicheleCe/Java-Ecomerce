@@ -35,6 +35,18 @@ public class Inventory {
 	/** The quantity in stock. */
 	@Column(name = "quantity", nullable = false)
 	private Integer quantity;
+	
+	/** The price of the product. */
+	@Column(name = "price", nullable = false)
+	private Double price;
+
+	public Double getPrice() {
+		return price;
+	}
+
+	public void setPrice(Double price) {
+		this.price = price;
+	}
 
 	@Column(name = "model")
 	private String model;
