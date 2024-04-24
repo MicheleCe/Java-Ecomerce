@@ -1,6 +1,7 @@
 package com.service;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import com.api.model.LoginBody;
 import com.api.model.PasswordResetBody;
@@ -97,6 +98,7 @@ public class UserService {
    * @param loginBody The login request.
    * @return The authentication token. Null if the request was invalid.
    */
+
   public String loginUser(LoginBody loginBody) throws UserNotVerifiedException, EmailFailureException {
     Optional<LocalUser> opUser = localUserDAO.findByUsernameIgnoreCase(loginBody.getUsername());
     if (opUser.isPresent()) {

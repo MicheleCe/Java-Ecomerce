@@ -28,6 +28,7 @@ public class ProductService {
     private ProductDAO productDAO;
     private InventoryDAO inventoryDAO;
     private CategoryDAO categoryDAO;
+    private ImageDataService imageDataService;
     
     
     
@@ -39,10 +40,11 @@ public class ProductService {
      * 
      * @param productDAO
      */
-    public ProductService(ProductDAO productDAO, InventoryDAO inventoryDAO, CategoryDAO categoryDAO) {
+    public ProductService(ProductDAO productDAO, InventoryDAO inventoryDAO, CategoryDAO categoryDAO, ImageDataService imageDataService) {
         this.productDAO = productDAO;
         this.inventoryDAO = inventoryDAO;
         this.categoryDAO = categoryDAO;
+        this.imageDataService = imageDataService;
     }
 
     /**
@@ -91,19 +93,19 @@ public class ProductService {
 
         List<Inventory> newInventories = new ArrayList<>();
         for (Inventory inventory : product.getInventory()) {
-            Inventory newInventory = new Inventory();
-            newInventory.setProduct(newProduct);
-            newInventory.setQuantity(inventory.getQuantity());
-            newInventory.setColor(inventory.getColor());
-            newInventory.setModel(inventory.getModel());
-            newInventory.setPrice(inventory.getPrice());
-            newInventories.add(newInventory);
+        	if (inventory.getQuantity() > 0) {
+        		Inventory newInventory = new Inventory();
+        		newInventory.setProduct(newProduct);
+        		newInventory.setQuantity(inventory.getQuantity());
+        		newInventory.setColor(inventory.getColor());
+        		newInventory.setModel(inventory.getModel());
+        		newInventory.setPrice(inventory.getPrice());
+        		newInventories.add(newInventory);
+        	}
         }
 
-
         newInventories = inventoryDAO.saveAll(newInventories);
-
-
+        
         newProduct.setInventory(newInventories);
 
         return productDAO.save(newProduct);
@@ -176,27 +178,31 @@ public class ProductService {
     
     @Transactional
     public void addProductToCategory(UUID categoryId, Product product) {
+    	
         Optional<Category> existingCategoryOptional = categoryDAO.findById(categoryId);
         if (existingCategoryOptional == null) {
             throw new IllegalArgumentException("Category not found");
         }
         
         Category categoryData = existingCategoryOptional.get();
-
+        
         categoryData.getProducts().add(product);
         product.getCategories().add(categoryData);
-
+        
         categoryDAO.save(categoryData);
         productDAO.save(product);
     }
     
     
+    
+    @Transactional
     public void deleteProduct(UUID productId) {
-    	Optional<Product> existingProductOptional = productDAO.findById(productId);
-    	if (existingProductOptional.isPresent()) {
-    		Product existingProduct = existingProductOptional.get();
-    		productDAO.delete(existingProduct);
-    	}
+        Optional<Product> existingProductOptional = productDAO.findById(productId);
+        if (existingProductOptional.isPresent()) {
+        	imageDataService.deleteProductFolder(productId);
+            Product existingProduct = existingProductOptional.get();
+            productDAO.delete(existingProduct);
+        }
     }
     
     public List<Product> findProductsByUserId(UUID userId) {

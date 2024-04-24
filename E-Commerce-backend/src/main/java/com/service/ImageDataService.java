@@ -1,27 +1,27 @@
 package com.service;
 
-import java.io.FileNotFoundException;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
+import java.io.InputStream;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.repository.ImageDataDAO;
-
-import net.coobird.thumbnailator.Thumbnails;
 
 @Service
 public class ImageDataService {
@@ -40,133 +40,114 @@ public class ImageDataService {
 		this.imageDataDAO = imageDataDAO;
 	}
 
-	public String saveImageToStorage(String type, UUID holderId, MultipartFile imageFile) throws IOException {
-		String uniqueFileName = UUID.randomUUID().toString() + "_" + holderId + "_" +  LocalDateTime.now().toLocalDate().toString() + "_" +  imageFile.getOriginalFilename();
-		Path directory;
-		directory = Paths.get(uploadDirectory, holderId.toString(), type);
+	public String saveImagesToStorage(String type, UUID holderId, List<MultipartFile> imageFiles) throws IOException {
+		Path directory = Paths.get(uploadDirectory, holderId.toString(), type);
+		Files.createDirectories(directory);
 
-		Path filePath = directory.resolve(uniqueFileName);
+		String zipFileName = type + "_images.zip";
+		Path zipFilePath = directory.resolve(zipFileName);
 
-		if (!Files.exists(directory)) {
-			Files.createDirectories(directory);
-		}
-
-		int[] dimensions = getImageDimensions(type);
-
-		Thumbnails.of(imageFile.getInputStream()).size(dimensions[0], dimensions[1]) 
-				.outputQuality(1).outputFormat("jpeg").toFile(filePath.toFile());
-		
-		return filePath.toString(); 
-	}
-
-	private int[] getImageDimensions(String type) {
-		int width, height;
-		switch (type) {
-		case "profile":
-			width = 100; // Set profile picture width
-			height = 100; // Set profile picture height
-			break;
-		case "thumbnail":
-			width = 400; // Set thumbnail width
-			height = 200; // Set thumbnail height
-			break;
-		case "gallery":
-			width = 800; // Set gallery image width
-			height = 600; // Set gallery image height
-			break;
-		default:
-			throw new IllegalArgumentException("Invalid image type: " + type);
-		}
-		return new int[] { width, height };
-	}
-
-	/*
-	 * public byte[] getProductImages(String holderId, String type) throws
-	 * IOException { Path directory = Paths.get(uploadDirectory, holderId, type,
-	 * "f47dddc4-bc40-4d17-93ea-cb9d2d0cb77a_2_SharedScreenshot.jpg.png");
-	 * 
-	 * byte[] imageBytes = Files.readAllBytes(directory); return imageBytes;
-	 * 
-	 * 
-	 * // Check if the directory exists if (!Files.exists(directory)) { throw new
-	 * IOException("Directory does not exist: " + directory); }
-	 * 
-	 * 
-	 * List<byte[]> imageBytesList = new ArrayList<>();
-	 * 
-	 * // List all files in the directory try (DirectoryStream<Path> stream =
-	 * Files.newDirectoryStream(directory)) { for (Path imagePath : stream) { //
-	 * Check if the file is a regular file (not a directory) if
-	 * (Files.isRegularFile(imagePath)) { // Read the image file into byte array
-	 * byte[] imageBytes = Files.readAllBytes(imagePath);
-	 * imageBytesList.add(imageBytes); } } }
-	 * 
-	 * return imageBytesList; }
-	 * 
-	 */
-
-//	public byte[] getImage(UUID holderId, String type) throws IOException {
-//	    Path directory = Paths.get(uploadDirectory, holderId.toString(), type);
-//	    
-//	    try (Stream<Path> paths = Files.list(directory)) {
-//	        Optional<Path> firstFile = paths
-//	                .filter(path -> path.getFileName().toString().contains(holderId.toString()))
-//	                .findFirst(); // Find the first file whose name contains the holderId
-//
-//	        if (firstFile.isPresent()) {
-//	            // Read bytes from the first file found
-//	            return Files.readAllBytes(firstFile.get());
-//	        } else {
-//	            // Handle case where no file matching the criteria is found
-//	            throw new FileNotFoundException("No file found containing the holderId: " + holderId);
-//	        }
-//	    }
-//	}
-
-	public String deleteImage(String imageType, String imageName) throws IOException {
-		// Split the string by underscores ('_')
-        String[] parts = imageName.split("_");
-        String holderId = parts[1];
-		Path imagePath = Path.of(uploadDirectory, holderId, imageType, imageName);
-		if (Files.exists(imagePath)) {
-			Files.delete(imagePath);
-			return "Success";
+		if (Files.exists(zipFilePath)) {
+			updateZipFile(zipFilePath, imageFiles);
 		} else {
-			return "Failed"; 
+			createZipFile(zipFilePath, imageFiles);
+		}
+
+		return zipFileName;
+	}
+	    
+
+	private void createZipFile(Path zipFilePath, List<MultipartFile> imageFiles) throws IOException {
+		try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				ZipOutputStream zipOutputStream = new ZipOutputStream(baos)) {
+
+			for (MultipartFile imageFile : imageFiles) {
+				String uniqueFileName = imageFile.getOriginalFilename();
+				System.out.println(uniqueFileName);
+				ZipEntry zipEntry = new ZipEntry(uniqueFileName);
+				zipOutputStream.putNextEntry(zipEntry);
+
+				byte[] buffer = new byte[1024];
+				int len;
+				try (InputStream inputStream = imageFile.getInputStream()) {
+					while ((len = inputStream.read(buffer)) > 0) {
+						zipOutputStream.write(buffer, 0, len);
+					}
+				}
+			}
+
+			zipOutputStream.closeEntry();
+			zipOutputStream.finish();
+
+			Files.write(zipFilePath, baos.toByteArray());
 		}
 	}
 
-	public List<Map<String, Object>> getImages(String holderId, String type) throws IOException {
-	    Path directory = Paths.get(uploadDirectory, holderId, type);
 
-	    if (!Files.exists(directory)) {
-	        throw new IOException("Directory does not exist: " + directory);
-	    }
+	private void updateZipFile(Path zipFilePath, List<MultipartFile> imageFiles) throws IOException {
+		Map<String, String> env = new HashMap<>();
+		env.put("create", "false");
 
-	    List<Map<String, Object>> imagesList = new ArrayList<>();
+		try (FileSystem zipFileSystem = FileSystems.newFileSystem(zipFilePath, env)) {
+			for (MultipartFile imageFile : imageFiles) {
+				String uniqueFileName =  imageFile.getOriginalFilename();
+				Path zipEntryPath = zipFileSystem.getPath(uniqueFileName);
 
-	    try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
-	        for (Path imagePath : stream) {
-	            if (Files.isRegularFile(imagePath) && isImageFile(imagePath)) {
-	                Map<String, Object> imageData = new HashMap<>();
-	                byte[] imageBytes = Files.readAllBytes(imagePath);
-	                String filename = imagePath.getFileName().toString();
-	                
-	                imageData.put("filename", filename);
-	                imageData.put("imageBytes", imageBytes);
-	                
-	                imagesList.add(imageData);
-	            }
-	        }
-	    }
-
-	    return imagesList;
+				if (!Files.exists(zipEntryPath)) {
+					try (InputStream inputStream = imageFile.getInputStream()) {
+						Files.copy(inputStream, zipEntryPath);
+					}
+				} else {
+					try (InputStream inputStream = imageFile.getInputStream()) {
+						Files.delete(zipEntryPath);
+						Files.copy(inputStream, zipEntryPath);
+					}
+				}
+			}
+		}
 	}
 
-	private boolean isImageFile(Path filePath) {
-		String fileName = filePath.getFileName().toString().toLowerCase();
-		return fileName.endsWith(".jpg") || fileName.endsWith(".jpeg") || fileName.endsWith(".png")
-				|| fileName.endsWith(".gif");
+
+
+	public void deleteImageFromZip(String type, UUID holderId, String imageName) throws IOException {
+
+		Path zipFilePath = Paths.get(uploadDirectory, holderId.toString(), type, type + "_images.zip");
+		Map<String, String> env = new HashMap<>();
+		env.put("create", "false");
+		try (FileSystem zipFileSystem = FileSystems.newFileSystem(zipFilePath, env)) {
+			Path imagePath = zipFileSystem.getPath(imageName);
+			if (Files.exists(imagePath)) {
+				Files.delete(imagePath);
+			} else {
+				System.out.println("Image '" + imageName + "' does not exist in the ZIP file.");
+			}
+		}
 	}
 
+	
+	public String getZipImages(String holderId, String type) throws IOException {
+		String zipFilePath = Paths.get(uploadDirectory, holderId.toString(), type, type + "_images.zip")
+				.toString();
+
+		System.out.println(zipFilePath);
+		return zipFilePath;
+	}
+
+	
+	public String deleteProductFolder(UUID productId) {
+		try {
+
+			String directoryPath = Paths.get(uploadDirectory, productId.toString()).toString();
+			System.out.println(directoryPath);
+
+			FileUtils.deleteDirectory(new File(directoryPath));
+
+			return "Images deleted successfully for holderId: " + productId;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return "Error deleting images for holderId: " + productId;
+		}
+	}
+
+	
 }
