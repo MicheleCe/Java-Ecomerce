@@ -50,46 +50,11 @@ public class ImageController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    
-    
-    /*
-    @GetMapping("/{holderId}/{imageType}")
-    public ResponseEntity<byte[]> getProductImage(@PathVariable String holderId, @PathVariable String imageType) {
-        try {
-            // Assuming you have a method in ImageDataService to retrieve the image byte array by productId
-            byte[] imageBytes = imageDataService.getProductImage(holderId, imageType);
-            // You may also need to determine the appropriate content type based on the image format
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.IMAGE_PNG); // Assuming JPEG format for simplicity
-            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-    
-    */
-    
-//    @GetMapping("/{holderId}/{imageType}")
-//    public ResponseEntity<List<byte[]>> getImage(@PathVariable String holderId, @PathVariable String imageType) {
-//        try {
-//            // Retrieve the list of image byte arrays from the service
-//            List<byte[]> imageBytesList = imageDataService.getImages(holderId, imageType);
-//
-//            // Return the list of byte arrays as ResponseEntity
-//            return new ResponseEntity<>(imageBytesList, HttpStatus.OK);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-//        }
-//    }
-    
 
     @GetMapping("/{holderId}/{imageType}")
     public ResponseEntity<FileSystemResource> getProductImages(@PathVariable String holderId, @PathVariable String imageType) {
         try {
-
-            String zipFilePath = imageDataService.getZipImages(holderId, imageType );
+            String zipFilePath = imageDataService.getZipImages(holderId, imageType);
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
@@ -98,8 +63,7 @@ public class ImageController {
             return ResponseEntity.ok()
                     .headers(headers)
                     .body(new FileSystemResource(zipFilePath));
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
@@ -119,55 +83,6 @@ public class ImageController {
         }
     }
     
-    
-    
-//    @DeleteMapping("/{imageType}/{imageName}")
-//    public String deleteImage(@PathVariable String imageType, @PathVariable String imageName) {
-//        try {
-//            String result = imageDataService.deleteImageFromZip(imageType, imageName);
-//            if (result.equals("Success")) {
-//                return "Image deleted successfully";
-//            } else {
-//                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found");
-//            }
-//        } catch (IOException e) {
-//            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to delete image", e);
-//        }
-//    }
-    
 
-    
-//    @GetMapping("/{holderId}")
-//    public ResponseEntity<byte[]> getProductThumbnail(@PathVariable String holderId) {
-//        try {
-//            List<Map<String, Object>> imageBytesList = imageDataService.getImages(holderId, "thumbnail");
-//
-//            if (imageBytesList.isEmpty()) {
-//                return ResponseEntity.notFound().build();
-//            }
-//
-//            HttpHeaders headers = new HttpHeaders();
-//            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-//            headers.setContentDispositionFormData("attachment", "images.zip"); 
-//
-//            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//            try (ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {
-//                Map<String, Object> imageData = imageBytesList.get(0); 
-//                byte[] imageBytes = (byte[]) imageData.get("imageBytes");
-//                String imageName = (String) imageData.get("filename");
-//
-//                ZipEntry zipEntry = new ZipEntry(imageName);
-//                zipOutputStream.putNextEntry(zipEntry);
-//                zipOutputStream.write(imageBytes);
-//                zipOutputStream.closeEntry();
-//            }
-//            byte[] zipBytes = outputStream.toByteArray();
-//
-//            return new ResponseEntity<>(zipBytes, headers, HttpStatus.OK);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-//        }
-//    }
     
 }

@@ -126,13 +126,16 @@ public class ImageDataService {
 
 	
 	public String getZipImages(String holderId, String type) throws IOException {
-		String zipFilePath = Paths.get(uploadDirectory, holderId.toString(), type, type + "_images.zip")
-				.toString();
+	    String directoryPath = Paths.get(uploadDirectory, holderId.toString(), type).toString();
 
-		System.out.println(zipFilePath);
-		return zipFilePath;
+	    Path directory = Paths.get(directoryPath);
+	    if (!Files.exists(directory) || !Files.isDirectory(directory)) {
+	        throw new IOException("Directory does not exist or is not a directory: " + directoryPath);
+	    }
+
+	    String zipFilePath = Paths.get(directoryPath, type + "_images.zip").toString();
+	    return zipFilePath;
 	}
-
 	
 	public String deleteProductFolder(UUID productId) {
 		try {
