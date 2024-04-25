@@ -17,14 +17,30 @@ public class WebSecurityConfig {
 		this.jwtRequestFilter = jwtRequestFilter;
 	}
 
+//	@Bean
+//	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+//		http.csrf(csrf -> csrf.disable());
+//		// add jwtRequestFilter before calling the AuthorizationFilter.class
+//		http.addFilterBefore(jwtRequestFilter, AuthorizationFilter.class);
+//		
+//		http.authorizeRequests().requestMatchers("**").permitAll()
+////        http.authorizeHttpRequests().requestMatchers("/product", "/image/**", "/auth/register", "/auth/login", "/auth/verify","/auth/forgot","/auth/reset", "/error", "/websocket", "/websocket/**").permitAll()
+//				.anyRequest().authenticated();
+//
+//		return http.build();
+//	}
+	
+	
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.csrf().disable().cors().disable();
-		// add jwtRequestFilter before calling the AuthorizationFilter.class
+		http.csrf(csrf -> csrf.disable());
 		http.addFilterBefore(jwtRequestFilter, AuthorizationFilter.class);
-		http.authorizeHttpRequests().requestMatchers("**").permitAll()
-//        http.authorizeHttpRequests().requestMatchers("/product", "/image/**", "/auth/register", "/auth/login", "/auth/verify","/auth/forgot","/auth/reset", "/error", "/websocket", "/websocket/**").permitAll()
-				.anyRequest().authenticated();
+		
+		
+		http.authorizeHttpRequests(auth -> auth
+	            .requestMatchers("**").permitAll()
+	            .anyRequest().authenticated()
+	        );
 
 		return http.build();
 	}

@@ -1,12 +1,15 @@
 package com.api.controller.product;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -66,6 +69,7 @@ public class ProductController {
 		if (user == null) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
+		
 		Product newProduct = product;
 		newProduct.setUserId(user.getId());
 		Product returnProduct = productService.addProduct(newProduct);
@@ -82,11 +86,13 @@ public class ProductController {
 	 * @param updatedProduct The updated product data.
 	 * @return ResponseEntity indicating success or failure of the update operation.
 	 */
-
+	
+	@CrossOrigin
 	@PatchMapping("/{productId}")
 	public ResponseEntity<?> updateProduct(@PathVariable UUID productId, @RequestBody Product updatedProduct) {
 		// Update the product using ProductService
 		Product updated = productService.updateProduct(productId, updatedProduct);
+		System.out.println(updatedProduct.getStatus());
 		if (updated == null) {
 			// If product is not found, return 404
 			return ResponseEntity.notFound().build();
@@ -101,6 +107,25 @@ public class ProductController {
     @GetMapping("/user")
     public List<Product> getProductsByUserId(@AuthenticationPrincipal LocalUser user) {
         return productService.findProductsByUserId(user.getId());
+    }
+    
+    @CrossOrigin
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<?> deleteProduct(@AuthenticationPrincipal LocalUser user, @PathVariable UUID productId) {
+		if (user == null) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
+        productService.deleteProduct(productId);
+        
+        // Check if the product was successfully deleted
+        Optional<Product> deletedProduct = productDAO.findById(productId);
+        if (deletedProduct.isEmpty()) {
+            // If product was deleted, return success response
+            return ResponseEntity.ok().build();
+        } else {
+            // If product was not deleted, return failure response
+            return ResponseEntity.notFound().build();
+        }
     }
 
 }
