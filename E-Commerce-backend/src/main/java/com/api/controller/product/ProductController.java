@@ -92,7 +92,6 @@ public class ProductController {
 	public ResponseEntity<?> updateProduct(@PathVariable UUID productId, @RequestBody Product updatedProduct) {
 		// Update the product using ProductService
 		Product updated = productService.updateProduct(productId, updatedProduct);
-		System.out.println(updatedProduct.getStatus());
 		if (updated == null) {
 			// If product is not found, return 404
 			return ResponseEntity.notFound().build();

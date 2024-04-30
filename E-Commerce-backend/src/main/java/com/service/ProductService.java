@@ -1,5 +1,8 @@
 package com.service;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -29,6 +32,9 @@ public class ProductService {
     private InventoryDAO inventoryDAO;
     private CategoryDAO categoryDAO;
     private ImageDataService imageDataService;
+    
+	@Value("${app.uploadDirectory}")
+	private String uploadDirectory;
     
     
     
@@ -65,12 +71,15 @@ public class ProductService {
     @Transactional
     public Product addProduct(Product product) {
 
+
+		
         Product newProduct = new Product();
         newProduct.setName(product.getName());
         newProduct.setShortDescription(product.getShortDescription());
         newProduct.setLongDescription(product.getLongDescription()); 
         newProduct.setStatus(product.getStatus());
         newProduct.setUserId(product.getUserId());
+        newProduct.setHasVariants(product.getHasVariants());
         if (product.getCreatedAt() == null) {
             LocalDateTime now = LocalDateTime.now();
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a");
@@ -79,6 +88,7 @@ public class ProductService {
         }
         
         newProduct = productDAO.save(newProduct);
+        
 
         for (Category category : product.getCategories()) {
             Optional<Category> existingCategoryOptional = categoryDAO.findById(category.getId());
@@ -100,6 +110,7 @@ public class ProductService {
         		newInventory.setColor(inventory.getColor());
         		newInventory.setModel(inventory.getModel());
         		newInventory.setPrice(inventory.getPrice());
+        		newInventory.setVariantDescription(inventory.getVariantDescription());
         		newInventories.add(newInventory);
         	}
         }
@@ -128,9 +139,10 @@ public class ProductService {
             existingProduct.setName(updatedProduct.getName());
             existingProduct.setShortDescription(updatedProduct.getShortDescription());
             existingProduct.setLongDescription(updatedProduct.getLongDescription());
-
+            existingProduct.setStatus(updatedProduct.getStatus());
             existingProduct.setCategories(updatedProduct.getCategories());
-            
+            existingProduct.setHasVariants(updatedProduct.getHasVariants());
+            System.out.println(updatedProduct);
             if (updatedProduct.getLastUpdate() == null) {
                 LocalDateTime now = LocalDateTime.now();
                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a");

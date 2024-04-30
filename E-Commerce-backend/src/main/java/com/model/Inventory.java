@@ -40,13 +40,8 @@ public class Inventory {
 	@Column(name = "price", nullable = false)
 	private Double price;
 
-	public Double getPrice() {
-		return price;
-	}
-
-	public void setPrice(Double price) {
-		this.price = price;
-	}
+	@Column(name = "long_description")
+	private String VariantDescription;
 
 	@Column(name = "model")
 	private String model;
@@ -62,6 +57,14 @@ public class Inventory {
 		this.id = id;
 	}
 
+	public Double getPrice() {
+		return price;
+	}
+
+	public void setPrice(Double price) {
+		this.price = price;
+	}
+	
 	public Product getProduct() {
 		return product;
 	}
@@ -94,7 +97,13 @@ public class Inventory {
 		this.color = color;
 	}
 
-	
+	public String getVariantDescription() {
+		return VariantDescription;
+	}
+
+	public void setVariantDescription(String variantDescription) {
+		VariantDescription = variantDescription;
+	}
 
 
 }

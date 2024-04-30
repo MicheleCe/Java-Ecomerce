@@ -45,6 +45,8 @@ public class Product {
 	@Column(name = "long_description")
 	private String longDescription;
 
+	@Column(name = "has_Variants")
+	private Boolean hasVariants;
 
 	@Column(name = "created_at", updatable = false)
 	private String createdAt;
@@ -147,13 +149,24 @@ public class Product {
 	public void setUserId(UUID userId) {
 		this.userId = userId;
 	}
+	
+	public Boolean getHasVariants() {
+		return hasVariants;
+	}
+
+	public void setHasVariants(Boolean hasVariant) {
+		this.hasVariants = hasVariant;
+	}
 
 	@Override
 	public String toString() {
 		return "Product [id=" + id + ", name=" + name + ", shortDescription=" + shortDescription + ", longDescription="
-				+ longDescription + ", createdAt=" + createdAt + ", lastUpdate=" + lastUpdate + ", userId=" + userId
-				+ ", status=" + status + ", categories=" + categories + ", inventory=" + inventory + "]";
+				+ longDescription + ", hasVariants=" + hasVariants + ", createdAt=" + createdAt + ", lastUpdate="
+				+ lastUpdate + ", userId=" + userId + ", status=" + status + ", categories=" + categories
+				+ ", inventory=" + inventory + "]";
 	}
+
+	
 
 	
 }

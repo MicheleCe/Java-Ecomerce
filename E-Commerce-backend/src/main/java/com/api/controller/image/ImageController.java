@@ -69,13 +69,17 @@ public class ImageController {
     }
     
     @CrossOrigin
-    @DeleteMapping("/{holderId}/{imageName}")
-    public ResponseEntity<String> deleteImageFromZip(
+    @DeleteMapping("/{holderId}/{type}/{imageName}")
+    public ResponseEntity<String> deleteImageFromZip(@AuthenticationPrincipal LocalUser user,
             @PathVariable UUID holderId,
-            @PathVariable String imageName) {
+            @PathVariable String type,
+            @PathVariable String imageName
+            ) {
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         try {
-        	imageDataService.deleteImageFromZip("thumbnail", holderId, imageName);
-        	imageDataService.deleteImageFromZip("gallery", holderId, imageName);
+        	imageDataService.deleteImageFromZip(type, holderId, imageName);
             return ResponseEntity.ok("Image '" + imageName + "' deleted successfully.");
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
