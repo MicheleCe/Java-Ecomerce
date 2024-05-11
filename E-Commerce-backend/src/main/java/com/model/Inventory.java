@@ -1,5 +1,7 @@
 package com.model;
 
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -10,8 +12,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 /**
@@ -43,11 +46,20 @@ public class Inventory {
 	@Column(name = "long_description")
 	private String VariantDescription;
 
-	@Column(name = "model")
-	private String model;
+	@Column(name = "selected_model")
+	private String selectedModel;
 
 	@Column(name = "color")
 	private String color;
+	
+	
+    @ManyToMany
+    @JoinTable(
+            name = "inventory_model_type",
+            joinColumns = @JoinColumn(name = "inventory_id"),
+			inverseJoinColumns = @JoinColumn(name = "model_type_id")
+    )
+	private Set<ModelType> modelTypes;
 
 	public UUID getId() {
 		return id;
@@ -81,20 +93,23 @@ public class Inventory {
 		this.quantity = quantity;
 	}
 
-	public String getModel() {
-		return model;
-	}
-
-	public void setModel(String model) {
-		this.model = model;
-	}
-
 	public String getColor() {
 		return color;
 	}
 
 	public void setColor(String color) {
 		this.color = color;
+	}
+
+	
+	
+
+	public Set<ModelType> getModelTypes() {
+		return modelTypes;
+	}
+
+	public void setModelTypes(Set<ModelType> modelTypes) {
+		this.modelTypes = modelTypes;
 	}
 
 	public String getVariantDescription() {
@@ -105,5 +120,20 @@ public class Inventory {
 		VariantDescription = variantDescription;
 	}
 
+	public String getSelectedModel() {
+		return selectedModel;
+	}
 
+	public void setSelectedModel(String selectedModel) {
+		this.selectedModel = selectedModel;
+	}
+
+	@Override
+	public String toString() {
+		return "Inventory [id=" + id  + ", quantity=" + quantity + ", price=" + price
+				+ ", VariantDescription=" + VariantDescription + ", selectedModel=" + selectedModel + ", color=" + color
+				+ ", modelTypes=" + modelTypes + "]";
+	}
+
+	
 }

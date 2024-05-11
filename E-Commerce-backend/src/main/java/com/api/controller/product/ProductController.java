@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.model.DataChange;
 import com.model.LocalUser;
+import com.model.ModelType;
 import com.model.Product;
 import com.repository.ProductDAO;
 import com.service.ProductService;
@@ -35,6 +36,7 @@ public class ProductController {
 	private ProductDAO productDAO;
 	private SimpMessagingTemplate simpMessagingTemplate;
 	private ProductService productService;
+
 
 	/**
 	 * Constructor for spring injection.
@@ -90,15 +92,12 @@ public class ProductController {
 	@CrossOrigin
 	@PatchMapping("/{productId}")
 	public ResponseEntity<?> updateProduct(@PathVariable UUID productId, @RequestBody Product updatedProduct) {
-		// Update the product using ProductService
 		Product updated = productService.updateProduct(productId, updatedProduct);
 		if (updated == null) {
-			// If product is not found, return 404
 			return ResponseEntity.notFound().build();
 		}
-		// Send WebSocket notification for product update
+		System.out.println(updated);
 		simpMessagingTemplate.convertAndSend("/topic/product", new DataChange<>(DataChange.ChangeType.UPDATE, updated));
-		// Return the updated product
 		return ResponseEntity.ok(updated);
 	}
 	
@@ -115,16 +114,19 @@ public class ProductController {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
         productService.deleteProduct(productId);
-        
-        // Check if the product was successfully deleted
+       
         Optional<Product> deletedProduct = productDAO.findById(productId);
         if (deletedProduct.isEmpty()) {
-            // If product was deleted, return success response
             return ResponseEntity.ok().build();
         } else {
-            // If product was not deleted, return failure response
             return ResponseEntity.notFound().build();
         }
     }
+    
+    @GetMapping("/model")
+    public List<ModelType> getProductsModel() {
+        return productService.getModelTypes();
+    }
+    
 
 }
