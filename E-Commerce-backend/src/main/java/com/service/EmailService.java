@@ -31,7 +31,7 @@ public class EmailService {
    */
   public EmailService(JavaMailSender javaMailSender) {
     this.javaMailSender = javaMailSender;
-  }
+  }     
 
   /**
    * Makes a SimpleMailMessage for sending.

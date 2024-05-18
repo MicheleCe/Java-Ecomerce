@@ -181,7 +181,6 @@ public class UserService {
    * @return True if they have permission, false otherwise.
    */
   public boolean userHasPermissionToUser(LocalUser user, UUID id) {
-	  System.out.println(user.getId().toString() + id);
     return user.getId().equals(id);
   }
 

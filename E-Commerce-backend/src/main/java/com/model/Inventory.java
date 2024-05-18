@@ -128,12 +128,6 @@ public class Inventory {
 		this.selectedModel = selectedModel;
 	}
 
-	@Override
-	public String toString() {
-		return "Inventory [id=" + id  + ", quantity=" + quantity + ", price=" + price
-				+ ", VariantDescription=" + VariantDescription + ", selectedModel=" + selectedModel + ", color=" + color
-				+ ", modelTypes=" + modelTypes + "]";
-	}
 
 	
 }

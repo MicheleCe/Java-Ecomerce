@@ -4,6 +4,9 @@ import java.io.ByteArrayOutputStream;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
 public class ImageUtil {
 
     public static byte[] compressImage(byte[] data) {

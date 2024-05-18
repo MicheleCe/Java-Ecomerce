@@ -176,6 +176,8 @@ public class ProductService {
                     if (updatedInventory.getQuantity() == 0) {
                         existingInventories.remove(existingInventory);
                         inventoryDAO.delete(existingInventory);
+                        imageDataService.deleteInventoryFolder(source.getId(), existingInventory.getId(), "gallery");
+                        imageDataService.deleteInventoryFolder(source.getId(), existingInventory.getId(), "thumbnail");
                     } else {
                         existingInventory.setQuantity(updatedInventory.getQuantity());
                         existingInventory.setColor(updatedInventory.getColor());

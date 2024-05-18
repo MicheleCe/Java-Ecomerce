@@ -158,15 +158,6 @@ public class Product {
 		this.hasVariants = hasVariant;
 	}
 
-	@Override
-	public String toString() {
-		return "Product [id=" + id + ", name=" + name + ", shortDescription=" + shortDescription + ", longDescription="
-				+ longDescription + ", hasVariants=" + hasVariants + ", createdAt=" + createdAt + ", lastUpdate="
-				+ lastUpdate + ", userId=" + userId + ", status=" + status + ", categories=" + categories
-				+ ", inventory=" + inventory + "]";
-	}
-
-	
 
 	
 }

@@ -86,7 +86,7 @@ public class ProductController {
 	 * 
 	 * @param productId      The ID of the product to update.
 	 * @param updatedProduct The updated product data.
-	 * @return ResponseEntity indicating success or failure of the update operation.
+	 * @return ResponseEntity indicating success or failure of the u  pdate operation.
 	 */
 	
 	@CrossOrigin
@@ -96,7 +96,6 @@ public class ProductController {
 		if (updated == null) {
 			return ResponseEntity.notFound().build();
 		}
-		System.out.println(updated);
 		simpMessagingTemplate.convertAndSend("/topic/product", new DataChange<>(DataChange.ChangeType.UPDATE, updated));
 		return ResponseEntity.ok(updated);
 	}

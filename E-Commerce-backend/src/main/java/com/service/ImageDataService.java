@@ -63,7 +63,6 @@ public class ImageDataService {
 
 			for (MultipartFile imageFile : imageFiles) {
 				String uniqueFileName = imageFile.getOriginalFilename();
-				System.out.println(uniqueFileName);
 				ZipEntry zipEntry = new ZipEntry(uniqueFileName);
 				zipOutputStream.putNextEntry(zipEntry);
 
@@ -141,7 +140,6 @@ public class ImageDataService {
 		try {
 
 			String directoryPath = Paths.get(uploadDirectory, productId.toString()).toString();
-			System.out.println(directoryPath);
 
 			FileUtils.deleteDirectory(new File(directoryPath));
 
@@ -149,6 +147,20 @@ public class ImageDataService {
 		} catch (IOException e) {
 			e.printStackTrace();
 			return "Error deleting images for holderId: " + productId;
+		}
+	}
+	
+	public String deleteInventoryFolder(UUID holderId, UUID inventoryId,  String type) {
+		try {
+
+			String directoryPath = Paths.get(uploadDirectory, holderId.toString(), inventoryId + "_" + type).toString();
+
+			FileUtils.deleteDirectory(new File(directoryPath));
+
+			return "Images deleted successfully for holderId: " + holderId;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return "Error deleting images for holderId: " + holderId;
 		}
 	}
 
